@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Procedural Canvas Hosts</title>
+<meta name="description" content="Two lesson hosts drawn entirely in Canvas 2D, lip-synced from timed letters and loudness. 12 styles, 4 animation tempos, no sprites, no ML at runtime.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2315171C'/%3E%3Cpath d='M8 15c3 6 13 6 16 0-3 2-13 2-16 0z' fill='%23FFC94A'/%3E%3C/svg%3E">
+<style>
+/* A dark screening room: neutral walls so the characters' colours do not fight the interface; one accent on the active control. */
+:root{--wall:#15171C;--panel:#1D2027;--line:#343945;--text:#ECEDF1;--quiet:#A0A6B4;--accent:#FFC94A;--accent-ink:#201A08;
+ --sans:system-ui,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;--mono:ui-monospace,"Cascadia Mono",Consolas,monospace;color-scheme:dark}
+*{box-sizing:border-box}
+html{background:var(--wall)}
+body{margin:0;background:var(--wall);color:var(--text);font:15px/1.45 var(--sans);padding:0 max(16px,env(safe-area-inset-right)) 40px max(16px,env(safe-area-inset-left))}
+.wrap{max-width:1180px;margin:0 auto}
+header{padding:22px 0 10px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px}
+h1{margin:0;font-size:22px;letter-spacing:.2px}
+header p{margin:0;color:var(--quiet);font-size:14px;flex:1 1 380px}
+header nav{display:flex;gap:14px;font-size:14px}
+a{color:var(--accent)}
+.bar{position:sticky;top:0;z-index:5;background:var(--wall);padding:10px 0;display:grid;gap:10px;border-bottom:1px solid var(--line)}
+.row{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
+.row .tag{font:600 11px var(--mono);color:var(--quiet);text-transform:uppercase;letter-spacing:.8px;margin-right:2px}
+button{font:500 13px/1 var(--mono);color:var(--text);background:none;border:1px solid var(--line);border-radius:6px;padding:8px 10px;cursor:pointer}
+button:hover{border-color:var(--quiet)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+#play{width:84px;font-weight:700;background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+input[type=range]{flex:1;min-width:120px;accent-color:var(--accent)}
+.time{font:400 13px var(--mono);color:var(--quiet);font-variant-numeric:tabular-nums;min-width:86px;text-align:right}
+.sep{width:1px;height:22px;background:var(--line)}
+.group{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap}
+.group b{font:600 11px var(--mono);color:var(--quiet);margin:0 2px 0 6px}
+main{display:grid;gap:12px;margin-top:14px}
+#stage{display:block;width:100%;aspect-ratio:16/9;border-radius:10px;background:var(--panel)}
+.caption{min-height:46px;display:flex;gap:10px;align-items:baseline;font-size:17px}
+.caption .who{font:700 13px var(--mono);min-width:52px}
+.caption .who.L{color:#7FD6C9}.caption .who.A{color:var(--accent)}
+#strip{display:block;width:100%;height:150px;border-radius:8px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.fact{background:var(--panel);border-radius:8px;padding:10px 12px}
+.fact span{display:block;font:600 11px var(--mono);color:var(--quiet);text-transform:uppercase;letter-spacing:.6px}
+.fact output{font:600 18px var(--mono);font-variant-numeric:tabular-nums}
+.note{color:var(--quiet);font-size:13px}
+@media (max-width:640px){h1{font-size:19px}.row.scroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.row.scroll button{flex:none;white-space:nowrap}.time{min-width:70px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <h1>Procedural Canvas Hosts</h1>
+ <p>Two lesson hosts drawn entirely in Canvas 2D. The mouth, head, gaze, blinks and hands come from a 120 Hz pose track baked from timed letters and loudness. No sprites, no ML at runtime.</p>
+ <nav><a href="v1.html">First edition</a><a href="https://github.com/AverageCargo87/procedural-lip-sync-avatars/blob/main/docs/POSE_TRACK.md">How it works</a><a href="https://github.com/AverageCargo87/procedural-lip-sync-avatars">Source</a></nav>
+</header>
+<div class="bar">
+ <div class="row">
+  <button id="play" type="button">play</button>
+  <input id="seek" type="range" min="0" max="1000" value="0" aria-label="Time">
+  <span class="time" id="time">0:00 / 0:42</span>
+ </div>
+ <div class="row scroll" id="views" aria-label="View">
+  <span class="tag">view</span>
+ </div>
+ <div class="row scroll" id="styles" aria-label="Drawing style"></div>
+ <div class="row scroll" id="tempos" aria-label="Animation tempo">
+  <span class="tag">tempo</span>
+ </div>
+</div>
+<main>
+ <canvas id="stage" width="1920" height="1080" aria-label="Animated hosts"></canvas>
+ <div class="caption" aria-live="polite"><span class="who" id="who"></span><span id="line"></span></div>
+ <canvas id="strip" aria-label="Pose track around the current time"></canvas>
+ <div class="facts">
+  <div class="fact"><span>style</span><output id="f-style">-</output></div>
+  <div class="fact"><span>shapes per host</span><output id="f-shapes">-</output></div>
+  <div class="fact"><span>frame draw, median</span><output id="f-ms">-</output></div>
+  <div class="fact"><span>sound now (L / A)</span><output id="f-sound">-</output></div>
+ </div>
+ <p class="note">The strip shows the baked track: filled area is mouth opening, dashed lines are lip rounding and spreading, letters are placed where the aligner put them. The dialogue is in Russian (voice: ElevenLabs). Keys: space plays and pauses, arrows seek.</p>
+</main>
+</div>
+<script src="src/rech.js"></script>
+<script src="src/stili/_kit.js"></script>
+<script src="src/stili/kosoy.js"></script>
+<script src="src/stili/trapecii.js"></script>
+<script src="src/stili/grani.js"></script>
+<script src="src/stili/blok.js"></script>
+<script src="src/stili/kosoy2.js"></script>
+<script src="src/stili/trapecii2.js"></script>
+<script src="src/stili/grani2.js"></script>
+<script src="src/stili/blok2.js"></script>
+<script src="src/stili/kosoy3.js"></script>
+<script src="src/stili/trapecii3.js"></script>
+<script src="src/stili/grani3.js"></script>
+<script src="src/stili/blok3.js"></script>
+<script src="src/stage.js"></script>
+<script src="src/demo.js"></script>
+</body>
+</html>

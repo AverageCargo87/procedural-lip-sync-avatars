@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>First Edition Hosts</title>
+<link rel="icon" href="data:,">
+<style>
+:root{--ink:#ECEDF1;--wall:#15171C;--line:#343945;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--wall);color:var(--ink);font:13px/1.4 ui-monospace,Consolas,monospace}
+.st{display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px}
+h1{font:600 18px system-ui,sans-serif;margin:0;width:min(100%,1120px)}
+p{margin:0;width:min(100%,1120px);color:#A0A6B4;font-family:system-ui,sans-serif}
+canvas{display:block;width:min(100%,1120px);aspect-ratio:16/9;border-radius:8px}
+.bar{display:flex;align-items:center;gap:12px;width:min(100%,1120px);flex-wrap:wrap}
+button,select{font:inherit;color:inherit;background:none;border:1px solid var(--line);border-radius:6px;padding:7px 10px;cursor:pointer}
+button:hover,select:hover{border-color:#A0A6B4}
+input[type=range]{flex:1;min-width:140px;accent-color:#FFC94A}
+a{color:#FFC94A}
+</style>
+</head>
+<body>
+<div class="st">
+ <h1>First edition: personazh.js, four pairs</h1>
+ <p>The first drawing of the hosts: one look per pair, one shared parametric mouth. The 12 later styles reuse its mouth numbers through Kit.rot. <a href="index.html">Back to the 12 styles</a>.</p>
+ <canvas id="cv" width="1920" height="1080"></canvas>
+ <div class="bar">
+  <button id="play" type="button">play</button>
+  <input id="seek" type="range" min="0" max="1000" value="0" aria-label="Time">
+  <span id="time">0:00</span>
+  <select id="pair" aria-label="Pair"><option value="-1">all pairs</option><option value="0">pair 1</option><option value="1">pair 2</option><option value="2">pair 3</option><option value="3">pair 4</option></select>
+  <button id="close" type="button">mouth close-up</button>
+ </div>
+</div>
+<script src="src/rech.js"></script>
+<script src="src/personazh.js"></script>
+<script src="src/v1.js"></script>
+</body>
+</html>

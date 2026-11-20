@@ -1,0 +1,26 @@
+{
+  "name": "procedural-lip-sync-avatars",
+  "version": "1.0.0",
+  "description": "Two lesson hosts drawn entirely in Canvas 2D: a 120 Hz pose track baked from timed letters and loudness, a parametric bezier mouth, 12 styles, a mouth-honesty metric with mutation tests and deterministic video export.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node tools/server.mjs",
+    "test": "node --test \"test/*.test.mjs\"",
+    "build:track": "node tools/build-track.mjs data/demo.script.json",
+    "honesty": "node tools/proverka/honesty-cli.mjs all",
+    "mutants": "node tools/proverka/mutants.mjs",
+    "motion": "node tools/proverka/dvizhenie.mjs",
+    "measure:mouth": "node tools/proverka/rot-vidno.mjs",
+    "measure:speed": "node tools/proverka/skorost.mjs",
+    "video": "node tools/video.mjs",
+    "media": "node tools/media.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "1.59.1"
+  }
+}
